@@ -1,54 +1,77 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Todo from "./Todo";
+import Alert from "./Alert";
 import TodoForm from "./TodoForm";
 
 const Todos = () => {
   const [todos, setTodos] = useState([]);
   const [alert, setAlert] = useState("");
 
-  const overwhelm = () => {
-    const alerts = [
-      "this is starting to get overwhelming",
-      "lets just stick with four",
-      "what if we just get rid of a few...",
-    ];
-    let randomAlert = alerts[Math.floor(Math.random() * alerts.length)];
-    setAlert(randomAlert);
-
-    setTimeout(() => {
+  useEffect(() => {
+    if (JSON.parse(window.localStorage.getItem("todos"))?.length > 0) {
+      let pulledTodos = JSON.parse(window.localStorage.getItem("todos"));
       setAlert("");
-    }, 1000);
-  };
+      setTodos(pulledTodos);
+    } else {
+      setAlert("please add some items!");
+    }
+  }, []);
 
   const addTodo = todo => {
-    console.log("recieved todo: ", todo);
-    if (todos.length > 3) {
-      overwhelm();
-      let newTodos = todos.shift();
-      setTodos(newTodos);
+    if (todos.length <= 2) {
+      timeoutAlert("");
+      let updatedTodos = [...todos, todo];
+      processAndUpdateStorage(updatedTodos);
+    } else if (todos.length > 2) {
+      let updatedTodos = todos;
+      let removedTodo = updatedTodos.shift();
+      timeoutAlert(`too many todos! let's remove this one: ${removedTodo}`);
+      processAndUpdateStorage([...updatedTodos, todo]);
     } else {
-      setTodos([...todos, todo]);
+      console.log("something went wrong in the if/else @@Todos");
     }
-    setTodos([...todos, todo]);
+  };
 
-    // if (todoList.length > 3) {
-    //   todoList.pop();
-    // }
+  const deleteTodo = i => {
+    let updatedTodos = todos.filter(todo => todos.indexOf(todo) !== i);
+    processAndUpdateStorage(updatedTodos);
+    timeoutAlert("phew, i was getting worried about that one");
+  };
+
+  const deleteAllTodos = () => {
+    let updatedTodos = [];
+    processAndUpdateStorage(updatedTodos);
+    setAlert("please add some items!");
+  };
+
+  // HELPER FUNCTIONS
+  const processAndUpdateStorage = arr => {
+    setTodos(arr);
+    window.localStorage.setItem("todos", JSON.stringify(arr));
+  };
+
+  const timeoutAlert = str => {
+    setAlert(str);
+    // TODO - SetTimeout Promise Chainging Stuff
+    // setTimeout(() => {
+    //   console.log("begining timeout");
+    //   console.log(alert);
+    //   setAlert("");
+    // }, 2000);
   };
 
   return (
     <div className="todos">
       <TodoForm addTodo={addTodo} />
-      {todos.length > 0 ? (
-        todos.map((todo, i) => {
-          return <Todo todo={todo} key={i} />;
-        })
-      ) : (
-        <p>no data yet</p>
-      )}
+      <ul>
+        {todos?.map((todo, i) => {
+          return <Todo todo={todo} key={i} index={i} deleteTodo={deleteTodo} />;
+        })}
+      </ul>
       <br />
       <br />
-      <h3>{alert}</h3>
+      <Alert alert={alert} />
+      <button onClick={deleteAllTodos}>Delete All</button>
     </div>
   );
 };
