@@ -8,8 +8,10 @@ const Todos = () => {
   const [alert, setAlert] = useState("");
 
   useEffect(() => {
-    if (JSON.parse(window.localStorage.getItem("todos"))?.length > 0) {
-      let pulledTodos = JSON.parse(window.localStorage.getItem("todos"));
+    if (JSON.parse(window.localStorage.getItem("anxious__todos"))?.length > 0) {
+      let pulledTodos = JSON.parse(
+        window.localStorage.getItem("anxious__todos")
+      );
       setAlert("");
       setTodos(pulledTodos);
     } else {
@@ -17,15 +19,20 @@ const Todos = () => {
     }
   }, []);
 
+  /*
+      Todo Maintenance
+  */
+
   const addTodo = todo => {
+    todo = validateInput(todo);
     if (todos.length <= 2) {
-      timeoutAlert("");
+      setAlert("");
       let updatedTodos = [...todos, todo];
       processAndUpdateStorage(updatedTodos);
     } else if (todos.length > 2) {
       let updatedTodos = todos;
       let removedTodo = updatedTodos.shift();
-      timeoutAlert(`too many todos! let's remove this one: ${removedTodo}`);
+      setAlert(`too many todos! let's remove this one: ${removedTodo}`);
       processAndUpdateStorage([...updatedTodos, todo]);
     } else {
       console.log("something went wrong in the if/else @@Todos");
@@ -35,7 +42,7 @@ const Todos = () => {
   const deleteTodo = i => {
     let updatedTodos = todos.filter(todo => todos.indexOf(todo) !== i);
     processAndUpdateStorage(updatedTodos);
-    timeoutAlert("phew, i was getting worried about that one");
+    setAlert("phew, i was getting worried about that one");
   };
 
   const deleteAllTodos = () => {
@@ -44,32 +51,45 @@ const Todos = () => {
     setAlert("please add some items!");
   };
 
-  // HELPER FUNCTIONS
+  /*
+      HELPER FUNCTIONS
+  */
   const processAndUpdateStorage = arr => {
     setTodos(arr);
-    window.localStorage.setItem("todos", JSON.stringify(arr));
+    window.localStorage.setItem("anxious__todos", JSON.stringify(arr));
   };
 
-  const timeoutAlert = str => {
-    setAlert(str);
-    // TODO - SetTimeout Promise Chainging Stuff
-    // setTimeout(() => {
-    //   console.log("begining timeout");
-    //   console.log(alert);
-    //   setAlert("");
-    // }, 2000);
+  const validateInput = todo => {
+    if (typeof todo !== "string") {
+      setAlert("um, whatever you're trying to do... please don't");
+      return;
+    }
+
+    if (todo.length > 70) {
+      todo = todo.slice(0, 70);
+    }
+
+    return todo;
   };
+
+  // const timeoutAlert = str => {
+  //   setAlert(str);
+  // // TODO - SetTimeout Promise Chainging Stuff
+  //   setTimeout(() => {
+  //     console.log("begining timeout");
+  //     console.log(alert);
+  //     setAlert("");
+  //   }, 2000);
+  // };
 
   return (
-    <div className="todos">
+    <div className="todos-container">
       <TodoForm addTodo={addTodo} />
-      <ul>
+      <ul className="todos">
         {todos?.map((todo, i) => {
           return <Todo todo={todo} key={i} index={i} deleteTodo={deleteTodo} />;
         })}
       </ul>
-      <br />
-      <br />
       <Alert alert={alert} />
       <button onClick={deleteAllTodos}>Delete All</button>
     </div>

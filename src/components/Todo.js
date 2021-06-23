@@ -2,14 +2,15 @@ import React from "react";
 
 const Todo = ({ todo, deleteTodo, index }) => {
   return (
-    <li>
+    <li className={`todo todo-${index}`}>
       {todo}
-      <input
-        type="checkbox"
+      <button
         onClick={() => {
           deleteTodo(index);
         }}
-      />
+      >
+        X
+      </button>
     </li>
   );
 };

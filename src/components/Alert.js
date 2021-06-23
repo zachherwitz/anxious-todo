@@ -1,7 +1,7 @@
 import React from "react";
 
 const Alert = ({ alert }) => {
-  return <h3>{alert}</h3>;
+  return <p className="alert">{alert}</p>;
 };
 
 export default Alert;
